@@ -1,0 +1,466 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Tests For The WTF JavaScript Library</title>
+
+    <!-- YUI CSS and JavaScript files necessary for testing -->
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.7.0/build/logger/assets/logger.css" />
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.7.0/build/yuitest/assets/testlogger.css" />
+    <script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+    <script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/logger/logger-min.js"></script>
+    <script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/yuitest/yuitest-min.js"></script>
+
+    <!-- The WTF JavaScript Library that we are testing -->
+    <script type="text/javascript" src="javascripts/wtf.js"></script>
+
+  </head>
+  <body>
+    <div id="container">
+      <h1>Tests For The WTF JavaScript Library</h1>
+      <p>
+        This tests out the WTF JavaScript Library using the
+        <a href="http://developer.yahoo.com/yui/yuitest/">YUI Test library</a>.
+      </p>
+      <script type="text/javascript">
+
+
+
+/******************************************************************************
+* Test Suite For Private Functions
+*
+*/
+
+
+
+var privateFunctionsTestSuite = new YAHOO.tool.TestSuite("WTF Private Functions");
+
+
+
+privateFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "Converting To Julian Date",
+
+  testJulianDateConversion : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+    var julian;
+
+    date.setUTCFullYear(1970);
+    date.setUTCMonth(0); // 0 is January
+    date.setUTCDate(14);
+    date.setUTCHours(0);
+    julian = WTF._dateToJulianDate(date);
+    Assert.areSame(2440600.5, julian);
+
+    date.setUTCFullYear(2005);
+    date.setUTCMonth(9); // 9 is October
+    date.setUTCDate(10);
+    date.setUTCHours(0);
+    julian = WTF._dateToJulianDate(date);
+    Assert.areSame(2453653.5, julian);
+
+    date.setUTCFullYear(1998);
+    date.setUTCMonth(2); // 2 is March
+    date.setUTCDate(31);
+    date.setUTCHours(0);
+    julian = WTF._dateToJulianDate(date);
+    Assert.areSame(2450903.5, julian);
+
+    date.setUTCFullYear(1950);
+    date.setUTCMonth(9); // 9 is October
+    date.setUTCDate(15);
+    date.setUTCHours(18);
+    julian = WTF._dateToJulianDate(date);
+    Assert.areSame(2433570.25, julian);
+
+    date.setUTCFullYear(1650);
+    date.setUTCMonth(9); // 9 is October
+    date.setUTCDate(15);
+    date.setUTCHours(18);
+    julian = WTF._dateToJulianDate(date);
+    Assert.areSame(2323998.25, julian);
+
+  }
+}));
+
+
+
+privateFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "Converting To Alphabase",
+
+  testWholeNumbers : function () {
+    var Assert = YAHOO.util.Assert;
+    Assert.areSame("A", WTF._decimalToAlphabase(0));
+    Assert.areSame("B", WTF._decimalToAlphabase(1));
+    Assert.areSame("C", WTF._decimalToAlphabase(2));
+    Assert.areSame("J", WTF._decimalToAlphabase(9));
+    Assert.areSame("Z", WTF._decimalToAlphabase(25));
+    Assert.areSame("BA", WTF._decimalToAlphabase(26));
+    Assert.areSame("BB", WTF._decimalToAlphabase(27));
+    Assert.areSame("BAA", WTF._decimalToAlphabase(676));
+    Assert.areSame("BAB", WTF._decimalToAlphabase(677));
+    Assert.areSame("BAC", WTF._decimalToAlphabase(678));
+  },
+
+  testNegativeNumbers : function () {
+    var Assert = YAHOO.util.Assert;
+    Assert.areSame("-B", WTF._decimalToAlphabase(-1));
+    Assert.areSame("-C", WTF._decimalToAlphabase(-2));
+    Assert.areSame("-BB", WTF._decimalToAlphabase(-27));
+    Assert.areSame("-BAA", WTF._decimalToAlphabase(-676));
+  },
+
+  testRealNumbers : function () {
+    var Assert = YAHOO.util.Assert;
+    var exceptionThrown = false;
+    try {
+      WTF._decimalToAlphabase(7.7);
+    }
+    catch (e) {
+      exceptionThrown = true;
+      if (e.message !== "Real numbers not supported.") {
+        YAHOO.util.Assert.fail("Wrong exception thrown.");
+      }
+    }
+    if (exceptionThrown === false) {
+      YAHOO.util.Assert.fail("Exception not thrown.");
+    }
+  }
+
+}));
+
+
+
+privateFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "Converting To World Time Format",
+
+  testTimeConversion : function () {
+    var Assert = YAHOO.util.Assert;
+    Assert.areSame("AAAAA", WTF._timeToWtf(0)); // midnight
+    Assert.areSame("NAAAA", WTF._timeToWtf(12 * 60 * 60 * 1000)); // noon
+    Assert.areSame("BAAAA", WTF._timeToWtf(3323077));
+  },
+
+  testDatePart : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+    var wtf;
+
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(28);
+    date.setUTCHours(0);
+    wtf = WTF._dateToWtf(date);
+    Assert.areSame("FJRQH", wtf.datePart);
+
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(29);
+    date.setUTCHours(14);
+    wtf = WTF._dateToWtf(date);
+    Assert.areSame("FJRQJ", wtf.datePart);
+
+    date.setUTCFullYear(1900);
+    date.setUTCMonth(0); // 0 is January
+    date.setUTCDate(20);
+    date.setUTCHours(18);
+    wtf = WTF._dateToWtf(date);
+    Assert.areSame("FHKOE", wtf.datePart);
+  },
+
+  testTimePart : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+    var wtf;
+
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(27);
+    date.setUTCHours(12);
+    wtf = WTF._dateToWtf(date);
+    Assert.areSame("AAAAA", wtf.timePart);
+
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(28);
+    date.setUTCHours(0);
+    wtf = WTF._dateToWtf(date);
+    Assert.areSame("NAAAA", wtf.timePart);
+
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(28);
+    date.setUTCHours(12);
+    date.setUTCMinutes(55);
+    date.setUTCSeconds(23);
+    date.setUTCMilliseconds(77);
+    wtf = WTF._dateToWtf(date);
+    Assert.areSame("BAAAA", wtf.timePart);
+  }
+}));
+
+
+
+privateFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "Converting From World Time Format",
+
+  testWtfToDate : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(27);
+    date.setUTCHours(12);
+    Assert.areEqual(date.getTime(), WTF._wtfToDate("FJRQH:").getTime());
+    
+    date.setUTCFullYear(2009);
+    date.setUTCMonth(4); // 4 is May
+    date.setUTCDate(28);
+    date.setUTCHours(0);
+    Assert.areEqual(date.getTime(), WTF._wtfToDate("FJRQH:N").getTime());
+    
+    date.setUTCFullYear(1900);
+    date.setUTCMonth(0); // 0 is January
+    date.setUTCDate(20);
+    date.setUTCHours(12);
+    Assert.areSame(date.getTime(), WTF._wtfToDate("FHKOE:").getTime());
+    Assert.areSame(date.getTime(), WTF._wtfToDate("FHKOE:A").getTime());
+    Assert.areSame(date.getTime(), WTF._wtfToDate("FHKOE:AAAA").getTime());
+  }
+
+}));
+
+
+
+privateFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "Symmetry",
+
+  testSymmetry : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date();
+    var wtf = WTF._dateToWtf(date);
+    var date2 = WTF._wtfToDate(wtf.value);
+    var difference = Math.abs(date.getTime() - date2.getTime());
+    Assert.isTrue(difference < 10); // within 10 milliseconds of accuracy is okay
+  }
+
+}));
+
+
+
+/******************************************************************************
+* Test Suite For Public Functions
+*
+*/
+
+
+
+var publicFunctionsTestSuite = new YAHOO.tool.TestSuite("WTF Public Functions");
+
+
+
+publicFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "toWtf API Function",
+
+  testToWtf : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+    var wtf;
+
+    date.setUTCFullYear(1970);
+    date.setUTCMonth(0); // 0 is Jan
+    date.setUTCDate(1);
+    date.setUTCHours(0);
+    wtf = WTF.toWtf(date);
+    Assert.areSame("FIWIT", wtf.datePart);
+    Assert.areSame("NAAAA", wtf.timePart);
+    Assert.areSame("FIWIT:NAAAA", wtf.value);
+    
+    date.setUTCFullYear(1969);
+    date.setUTCMonth(11); // 11 is Dec
+    date.setUTCDate(31);
+    date.setUTCHours(12);
+    wtf = WTF.toWtf(date);
+    Assert.areSame("FIWIT", wtf.datePart);
+    Assert.areSame("AAAAA", wtf.timePart);
+    Assert.areSame("FIWIT:AAAAA", wtf.value);
+    
+    date.setUTCFullYear(2002);
+    date.setUTCMonth(6); // 6 is July
+    date.setUTCDate(10);
+    date.setUTCHours(12);
+    wtf = WTF.toWtf(date);
+    Assert.areSame("FJNXQ", wtf.datePart);
+    Assert.areSame("AAAAA", wtf.timePart);
+    Assert.areSame("FJNXQ:AAAAA", wtf.value);
+    
+    date.setUTCFullYear(2002);
+    date.setUTCMonth(6); // 6 is July
+    date.setUTCDate(10);
+    date.setUTCHours(13);
+    date.setUTCMinutes(55);
+    date.setUTCSeconds(1);
+    date.setUTCMilliseconds(777);
+    wtf = WTF.toWtf(date);
+    Assert.areSame("FJNXQ", wtf.datePart);
+    Assert.areSame("CCAAA", wtf.timePart);
+    Assert.areSame("FJNXQ:CCAAA", wtf.value);
+
+  }
+
+}));
+
+
+
+publicFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "toDate API Function",
+
+  testToDate : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+    var date2;
+
+    date.setUTCFullYear(1970);
+    date.setUTCMonth(0); // 0 is Jan
+    date.setUTCDate(1);
+    date.setUTCHours(0);
+    date2 = WTF.toDate("FIWIT:NAAAA");
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate("FIWIT:NAAA");
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate("FIWIT:NA");
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate("FIWIT:N");
+    Assert.areSame(date.getTime(), date2.getTime());
+    
+    date.setUTCFullYear(1969);
+    date.setUTCMonth(11); // 11 is Dec
+    date.setUTCDate(31);
+    date.setUTCHours(12);
+    date2 = WTF.toDate("FIWIT:AAAAA");
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate("FIWIT:A");
+    Assert.areSame(date.getTime(), date2.getTime());
+
+    date2 = WTF.toDate("FIWIT:");
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate("IWIT:");
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate("IWIT:AA");
+    Assert.areSame(date.getTime(), date2.getTime());
+
+    date2 = WTF.toDate(":AA");
+    Assert.areSame(date2.getUTCHours(), 12);
+    Assert.areSame(date2.getUTCMinutes(), 0);
+
+    date2 = WTF.toDate(":N");
+    Assert.areSame(date2.getUTCHours(), 0);
+    Assert.areSame(date2.getUTCMinutes(), 0);
+
+    date2 = WTF.toDate("N");
+    Assert.areSame(date2.getUTCHours(), 0);
+    Assert.areSame(date2.getUTCMinutes(), 0);
+
+    date2 = WTF.toDate(":");
+    Assert.areSame(date2.getUTCHours(), 12);
+    Assert.areSame(date2.getUTCMinutes(), 0);
+
+    var exceptionThrown = false;
+    try {
+      date2 = WTF.toDate("");
+    }
+    catch (e) {
+      exceptionThrown = true;
+      if (e.message !== "Unsupported type.") {
+        YAHOO.util.Assert.fail("Wrong exception thrown.");
+      }
+    }
+    if (exceptionThrown === false) {
+      YAHOO.util.Assert.fail("Exception not thrown.");
+    }
+
+    var exceptionThrown = false;
+    try {
+      date2 = WTF.toDate("ABCDEF:ABC"); // date part can't be longer than five characters
+    }
+    catch (e) {
+      exceptionThrown = true;
+      if (e.message == "Unsupported type.") {
+        YAHOO.util.Assert.fail("Wrong exception thrown.");
+      }
+    }
+    if (exceptionThrown === false) {
+      YAHOO.util.Assert.fail("Exception not thrown.");
+    }
+
+    try {
+      date2 = WTF.toDate("ABCDE:ABCDEFGHIJ"); // time part can be longer than five characters
+    }
+    catch (e) {
+      YAHOO.util.Assert.fail("Exception thrown.");
+    }
+
+  },
+
+  testToDateObjectInput : function () {
+    var Assert = YAHOO.util.Assert;
+    var date = new Date(0); // start out with a blank Date object
+    var date2;
+
+    date.setUTCFullYear(1970);
+    date.setUTCMonth(0); // 0 is Jan
+    date.setUTCDate(1);
+    date.setUTCHours(0);
+    date2 = WTF.toDate({ value: "FIWIT:NAAAA" });
+    Assert.areSame(date.getTime(), date2.getTime());
+    date2 = WTF.toDate({ value: "FIWIT:N" });
+    Assert.areSame(date.getTime(), date2.getTime());
+  }
+    
+}));
+
+
+
+publicFunctionsTestSuite.add(new YAHOO.tool.TestCase({
+  name: "now API Function",
+
+  testNow : function () {
+    var Assert = YAHOO.util.Assert;
+    var wtf = WTF.now();
+    var wtf2 = WTF.now();
+    var date = WTF._wtfToDate(wtf);
+    var date2 = WTF._wtfToDate(wtf2);
+    var past = new Date(2009, 4, 29);
+    var future = new Date(2030, 1, 12);
+    Assert.isTrue(date.getTime() <= date2.getTime());
+    Assert.isTrue(date.getTime() <= future.getTime());
+    Assert.isTrue(date.getTime() >= past.getTime());
+  }
+
+}));
+
+
+
+/******************************************************************************
+* Running The Test Suite
+*
+*/
+
+
+
+YAHOO.util.Event.onDOMReady(function (){
+    //create the logger
+    var logger = new YAHOO.tool.TestLogger();
+    YAHOO.tool.TestRunner.add(privateFunctionsTestSuite);
+    YAHOO.tool.TestRunner.add(publicFunctionsTestSuite);
+
+    //run the tests
+    YAHOO.tool.TestRunner.run();
+});
+
+
+
+      </script> 
+    </div>
+  </body>
+</html>
